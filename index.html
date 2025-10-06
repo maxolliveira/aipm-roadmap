@@ -8,333 +8,356 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { margin: 0; font-family: system-ui; }
+        body { 
+            margin: 0; 
+            font-family: system-ui, -apple-system, sans-serif; 
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
+    
     <script type="text/babel">
-import React, { useState, useEffect } from 'react';
-import { Trophy, BookOpen, Code, Users, Briefcase, Star, CheckCircle2, Circle, Award, ChevronDown, ChevronUp, Zap, Calendar } from 'lucide-react';
+        // ⚙️ CONFIGURAÇÃO SUPABASE
+        // DEPOIS DE CRIAR SEU PROJETO NO SUPABASE, SUBSTITUA AQUI:
+        const SUPABASE_URL = 'https://izsassdgnrzzopdjvyip.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6c2Fzc2RnbnJ6em9wZGp2eWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3ODk5NTIsImV4cCI6MjA3NTM2NTk1Mn0.EGBb3UX0KDyh3aE8jXrivIbn6Q7Vo_P7xjVDszNysHk';
 
-const AIPMRoadmap = () => {
-  const [activeTab, setActiveTab] = useState('roadmap');
-  const [expandedPhase, setExpandedPhase] = useState(0);
-  const [showAchievements, setShowAchievements] = useState(false);
-  
-  const [userProgress, setUserProgress] = useState({
-    totalXP: 0,
-    level: 'Junior PM',
-    completedItems: [],
-    achievements: []
-  });
+        // Componente principal
+        const { useState, useEffect } = React;
+        const { Trophy, BookOpen, Code, Users, Briefcase, Star, CheckCircle2, Circle, Award, ChevronDown, ChevronUp, Zap } = lucide;
 
-  const levels = [
-    { name: 'Junior PM', xpRequired: 0, icon: '🌱' },
-    { name: 'Mid PM', xpRequired: 1000, icon: '🚀' },
-    { name: 'Senior PM', xpRequired: 3000, icon: '⚡' },
-    { name: 'Staff PM', xpRequired: 6000, icon: '👑' },
-    { name: 'AI PM Expert', xpRequired: 10000, icon: '🏆' }
-  ];
-
-  const achievements = [
-    { id: 'first', name: 'Primeira Conquista', description: 'Complete sua primeira tarefa', icon: '🎯' },
-    { id: 'streak_7', name: 'Consistência', description: 'Complete 7 tarefas', icon: '🔥' },
-    { id: 'phase_1', name: 'Fundação Completa', description: 'Complete a Fase 1', icon: '📚' },
-    { id: 'coder', name: 'Programador', description: 'Complete 3 projetos', icon: '💻' },
-    { id: 'senior', name: 'Senior PM', description: 'Alcance 3000 XP', icon: '⭐' }
-  ];
-
-  const roadmapData = [
-    {
-      phase: 'Fase 1: Fundação',
-      duration: 'Meses 1-3',
-      icon: BookOpen,
-      color: 'bg-blue-500',
-      items: [
-        { id: 1, title: 'AI Product Management Specialization (Duke)', xp: 200, type: 'course', link: 'https://www.coursera.org' },
-        { id: 2, title: 'Generative AI for PMs (IBM)', xp: 150, type: 'course', link: 'https://www.coursera.org' },
-        { id: 3, title: 'Building AI-Powered Products (Marily Nika)', xp: 150, type: 'book' },
-        { id: 4, title: 'Inspired (Marty Cagan)', xp: 100, type: 'book' },
-        { id: 5, title: 'Participar de 3 comunidades de PM', xp: 50, type: 'community' },
-        { id: 6, title: 'Seguir 10+ experts no LinkedIn', xp: 30, type: 'community' },
-        { id: 7, title: 'Assinar 4 newsletters (PM + AI)', xp: 40, type: 'community' }
-      ]
-    },
-    {
-      phase: 'Fase 2: Profundidade Técnica',
-      duration: 'Meses 4-6',
-      icon: Code,
-      color: 'bg-purple-500',
-      items: [
-        { id: 8, title: 'Curso de LLMs (Deeplearning.AI)', xp: 250, type: 'course' },
-        { id: 9, title: 'Dominar Prompt Engineering', xp: 150, type: 'skill' },
-        { id: 10, title: 'Experimentar APIs (OpenAI, Anthropic)', xp: 200, type: 'practice' },
-        { id: 11, title: 'Construir AI Copilot', xp: 400, type: 'project' },
-        { id: 12, title: 'Implementar RAG Application', xp: 400, type: 'project' },
-        { id: 13, title: 'Criar AI Agent multi-step', xp: 500, type: 'project' },
-        { id: 14, title: 'Escrever 3 artigos no Medium/LinkedIn', xp: 200, type: 'content' }
-      ]
-    },
-    {
-      phase: 'Fase 3: Especialização',
-      duration: 'Meses 7-9',
-      icon: Briefcase,
-      color: 'bg-green-500',
-      items: [
-        { id: 15, title: 'Criar 5 case studies de produtos GenAI', xp: 300, type: 'case' },
-        { id: 16, title: 'Desenvolver framework de ROI para AI', xp: 250, type: 'framework' },
-        { id: 17, title: 'Curso sobre Responsible AI', xp: 200, type: 'course' },
-        { id: 18, title: 'Estudar GDPR e AI Act', xp: 150, type: 'study' },
-        { id: 19, title: 'Prototipar conversational interface', xp: 250, type: 'project' }
-      ]
-    },
-    {
-      phase: 'Fase 4: Thought Leadership',
-      duration: 'Meses 10-12',
-      icon: Users,
-      color: 'bg-yellow-500',
-      items: [
-        { id: 20, title: 'Palestrar em 2 meetups', xp: 500, type: 'speaking' },
-        { id: 21, title: 'Publicar 10+ artigos', xp: 400, type: 'content' },
-        { id: 22, title: 'Iniciar newsletter própria', xp: 300, type: 'content' },
-        { id: 23, title: 'Mentorar 3+ PMs', xp: 400, type: 'mentoring' },
-        { id: 24, title: 'Publicar framework próprio', xp: 600, type: 'framework' }
-      ]
-    }
-  ];
-
-  const [itemStates, setItemStates] = useState(
-    roadmapData.flatMap(phase => phase.items.map(item => ({ id: item.id, completed: false, notes: '' })))
-  );
-
-  const toggleItem = (itemId) => {
-    const newStates = itemStates.map(state => 
-      state.id === itemId ? { ...state, completed: !state.completed } : state
-    );
-    setItemStates(newStates);
-
-    const item = roadmapData.flatMap(p => p.items).find(i => i.id === itemId);
-    const isCompleted = newStates.find(s => s.id === itemId).completed;
-
-    setUserProgress(prev => {
-      const newXP = isCompleted ? prev.totalXP + item.xp : prev.totalXP - item.xp;
-      const newCompleted = isCompleted 
-        ? [...prev.completedItems, itemId]
-        : prev.completedItems.filter(id => id !== itemId);
-      
-      const currentLevel = [...levels].reverse().find(level => newXP >= level.xpRequired);
-      
-      let newAchievements = [...prev.achievements];
-      if (newCompleted.length >= 1 && !newAchievements.includes('first')) newAchievements.push('first');
-      if (newCompleted.length >= 7 && !newAchievements.includes('streak_7')) newAchievements.push('streak_7');
-      if (newXP >= 3000 && !newAchievements.includes('senior')) newAchievements.push('senior');
-
-      return {
-        totalXP: newXP,
-        level: currentLevel.name,
-        completedItems: newCompleted,
-        achievements: newAchievements
-      };
-    });
-  };
-
-  const currentLevelIndex = levels.findIndex(l => l.name === userProgress.level);
-  const nextLevel = levels[currentLevelIndex + 1];
-  const totalItems = roadmapData.reduce((sum, phase) => sum + phase.items.length, 0);
-  const completedCount = userProgress.completedItems.length;
-  const overallProgress = (completedCount / totalItems) * 100;
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
-      {/* Header */}
-      <div className="bg-black/30 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center space-x-3">
-              <Trophy className="w-8 h-8 text-yellow-400" />
-              <div>
-                <h1 className="text-xl md:text-2xl font-bold">AI Product Manager Journey</h1>
-                <p className="text-xs md:text-sm text-gray-400">Sua trilha para GenAI</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="text-center">
-                <div className="text-xs text-gray-400">Nível</div>
-                <div className="text-lg font-bold">{levels[currentLevelIndex].icon}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs text-gray-400">XP</div>
-                <div className="text-lg font-bold text-yellow-400">{userProgress.totalXP}</div>
-              </div>
-              <button
-                onClick={() => setShowAchievements(!showAchievements)}
-                className="relative p-2 hover:bg-white/10 rounded-lg"
-              >
-                <Award className="w-6 h-6 text-yellow-400" />
-                {userProgress.achievements.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {userProgress.achievements.length}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
+        function AIPMRoadmap() {
+          const [activeTab, setActiveTab] = useState('roadmap');
+          const [expandedPhase, setExpandedPhase] = useState(0);
+          const [showAchievements, setShowAchievements] = useState(false);
+          const [useCloud, setUseCloud] = useState(false);
           
-          <div className="mt-4">
-            <div className="flex justify-between text-xs text-gray-400 mb-1">
-              <span>{completedCount}/{totalItems} itens</span>
-              <span>{overallProgress.toFixed(0)}%</span>
-            </div>
-            <div className="w-full bg-gray-700 rounded-full h-2">
-              <div 
-                className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${overallProgress}%` }}
-              />
-            </div>
-          </div>
-          
-          {nextLevel && (
-            <div className="mt-2">
-              <div className="flex justify-between text-xs text-gray-400 mb-1">
-                <span>Próximo: {nextLevel.icon} {nextLevel.name}</span>
-                <span>{nextLevel.xpRequired - userProgress.totalXP} XP</span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+          const [userProgress, setUserProgress] = useState({
+            totalXP: 0,
+            level: 'Junior PM',
+            completedItems: [],
+            achievements: []
+          });
 
-      {/* Achievements Modal */}
-      {showAchievements && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={() => setShowAchievements(false)}>
-          <div className="bg-gradient-to-br from-slate-800 to-purple-900 rounded-2xl max-w-2xl w-full p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">🏆 Conquistas</h2>
-              <button onClick={() => setShowAchievements(false)} className="text-gray-400 hover:text-white text-2xl">×</button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {achievements.map(ach => {
-                const unlocked = userProgress.achievements.includes(ach.id);
-                return (
-                  <div 
-                    key={ach.id} 
-                    className={`rounded-lg p-4 ${unlocked ? 'bg-green-500/20 border-2 border-green-500' : 'bg-gray-800/30 opacity-50'}`}
-                  >
-                    <div className="text-3xl mb-2">{ach.icon}</div>
-                    <h4 className="font-bold">{ach.name}</h4>
-                    <p className="text-sm text-gray-300">{ach.description}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+          const levels = [
+            { name: 'Junior PM', xpRequired: 0, icon: '🌱' },
+            { name: 'Mid PM', xpRequired: 1000, icon: '🚀' },
+            { name: 'Senior PM', xpRequired: 3000, icon: '⚡' },
+            { name: 'Staff PM', xpRequired: 6000, icon: '👑' },
+            { name: 'AI PM Expert', xpRequired: 10000, icon: '🏆' }
+          ];
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="space-y-6">
-          {roadmapData.map((phase, phaseIndex) => {
-            const PhaseIcon = phase.icon;
-            const phaseCompletion = phase.items.filter(item => 
-              itemStates.find(s => s.id === item.id)?.completed
-            ).length;
-            const phaseTotal = phase.items.length;
-            const phaseProgress = (phaseCompletion / phaseTotal) * 100;
+          const achievements = [
+            { id: 'first', name: 'Primeira Conquista', description: 'Complete sua primeira tarefa', icon: '🎯' },
+            { id: 'streak_7', name: 'Consistência', description: 'Complete 7 tarefas', icon: '🔥' },
+            { id: 'phase_1', name: 'Fundação Completa', description: 'Complete a Fase 1', icon: '📚' },
+            { id: 'coder', name: 'Programador', description: 'Complete 3 projetos', icon: '💻' },
+            { id: 'senior', name: 'Senior PM', description: 'Alcance 3000 XP', icon: '⭐' }
+          ];
+
+          const roadmapData = [
+            {
+              phase: 'Fase 1: Fundação',
+              duration: 'Meses 1-3',
+              color: 'bg-blue-500',
+              items: [
+                { id: 1, title: 'AI Product Management Specialization (Duke)', xp: 200, type: 'course' },
+                { id: 2, title: 'Generative AI for PMs (IBM)', xp: 150, type: 'course' },
+                { id: 3, title: 'Building AI-Powered Products', xp: 150, type: 'book' },
+                { id: 4, title: 'Inspired (Marty Cagan)', xp: 100, type: 'book' },
+                { id: 5, title: 'Participar de 3 comunidades', xp: 50, type: 'community' },
+                { id: 6, title: 'Seguir 10+ experts LinkedIn', xp: 30, type: 'community' }
+              ]
+            },
+            {
+              phase: 'Fase 2: Profundidade Técnica',
+              duration: 'Meses 4-6',
+              color: 'bg-purple-500',
+              items: [
+                { id: 7, title: 'Curso de LLMs', xp: 250, type: 'course' },
+                { id: 8, title: 'Dominar Prompt Engineering', xp: 150, type: 'skill' },
+                { id: 9, title: 'Construir AI Copilot', xp: 400, type: 'project' },
+                { id: 10, title: 'Implementar RAG Application', xp: 400, type: 'project' },
+                { id: 11, title: 'Criar AI Agent', xp: 500, type: 'project' }
+              ]
+            },
+            {
+              phase: 'Fase 3: Especialização',
+              duration: 'Meses 7-9',
+              color: 'bg-green-500',
+              items: [
+                { id: 12, title: 'Criar 5 case studies', xp: 300, type: 'case' },
+                { id: 13, title: 'Framework de ROI para AI', xp: 250, type: 'framework' },
+                { id: 14, title: 'Curso Responsible AI', xp: 200, type: 'course' },
+                { id: 15, title: 'Estudar GDPR e AI Act', xp: 150, type: 'study' }
+              ]
+            },
+            {
+              phase: 'Fase 4: Leadership',
+              duration: 'Meses 10-12',
+              color: 'bg-yellow-500',
+              items: [
+                { id: 16, title: 'Palestrar em 2 meetups', xp: 500, type: 'speaking' },
+                { id: 17, title: 'Publicar 10+ artigos', xp: 400, type: 'content' },
+                { id: 18, title: 'Mentorar 3+ PMs', xp: 400, type: 'mentoring' },
+                { id: 19, title: 'Publicar framework próprio', xp: 600, type: 'framework' }
+              ]
+            }
+          ];
+
+          const [itemStates, setItemStates] = useState(
+            roadmapData.flatMap(phase => phase.items.map(item => ({ id: item.id, completed: false })))
+          );
+
+          // Sincronizar com Supabase
+          const syncToCloud = async () => {
+            if (!useCloud || SUPABASE_URL === 'https://SUA-URL.supabase.co') return;
             
-            return (
-              <div key={phaseIndex} className="bg-white/5 backdrop-blur-lg rounded-xl border border-white/10 overflow-hidden">
-                <div 
-                  className="p-6 cursor-pointer hover:bg-white/5 transition-all"
-                  onClick={() => setExpandedPhase(expandedPhase === phaseIndex ? -1 : phaseIndex)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className={`${phase.color} p-3 rounded-lg`}>
-                        <PhaseIcon className="w-6 h-6" />
-                      </div>
+            try {
+              const response = await fetch(`${SUPABASE_URL}/rest/v1/user_progress?user_id=eq.default_user`, {
+                method: 'PATCH',
+                headers: {
+                  'apikey': SUPABASE_KEY,
+                  'Authorization': `Bearer ${SUPABASE_KEY}`,
+                  'Content-Type': 'application/json',
+                  'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify({
+                  total_xp: userProgress.totalXP,
+                  level: userProgress.level,
+                  completed_items: userProgress.completedItems,
+                  achievements: userProgress.achievements,
+                  updated_at: new Date().toISOString()
+                })
+              });
+              console.log('✅ Sincronizado!');
+            } catch (error) {
+              console.error('❌ Erro ao sincronizar:', error);
+            }
+          };
+
+          useEffect(() => {
+            if (useCloud) syncToCloud();
+          }, [userProgress, useCloud]);
+
+          const toggleItem = (itemId) => {
+            const newStates = itemStates.map(state => 
+              state.id === itemId ? { ...state, completed: !state.completed } : state
+            );
+            setItemStates(newStates);
+
+            const item = roadmapData.flatMap(p => p.items).find(i => i.id === itemId);
+            const isCompleted = newStates.find(s => s.id === itemId).completed;
+
+            setUserProgress(prev => {
+              const newXP = isCompleted ? prev.totalXP + item.xp : prev.totalXP - item.xp;
+              const newCompleted = isCompleted 
+                ? [...prev.completedItems, itemId]
+                : prev.completedItems.filter(id => id !== itemId);
+              
+              const currentLevel = [...levels].reverse().find(level => newXP >= level.xpRequired);
+              
+              let newAchievements = [...prev.achievements];
+              if (newCompleted.length >= 1 && !newAchievements.includes('first')) newAchievements.push('first');
+              if (newCompleted.length >= 7 && !newAchievements.includes('streak_7')) newAchievements.push('streak_7');
+              if (newXP >= 3000 && !newAchievements.includes('senior')) newAchievements.push('senior');
+
+              return {
+                totalXP: newXP,
+                level: currentLevel.name,
+                completedItems: newCompleted,
+                achievements: newAchievements
+              };
+            });
+          };
+
+          const currentLevelIndex = levels.findIndex(l => l.name === userProgress.level);
+          const totalItems = roadmapData.reduce((sum, phase) => sum + phase.items.length, 0);
+          const completedCount = userProgress.completedItems.length;
+          const overallProgress = (completedCount / totalItems) * 100;
+
+          const isCloudConfigured = SUPABASE_URL !== 'https://SUA-URL.supabase.co';
+
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+              {/* Header */}
+              <div className="bg-black/30 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50">
+                <div className="max-w-7xl mx-auto px-4 py-4">
+                  {!isCloudConfigured && (
+                    <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3 mb-4">
+                      <p className="text-sm text-yellow-300">
+                        ⚠️ Configure suas credenciais Supabase no código para usar sincronização
+                      </p>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="text-4xl">🏆</div>
                       <div>
-                        <h3 className="text-xl font-bold">{phase.phase}</h3>
-                        <p className="text-sm text-gray-400">{phase.duration}</p>
+                        <h1 className="text-xl md:text-2xl font-bold">AI PM Journey</h1>
+                        <p className="text-xs text-gray-400">Roadmap GenAI</p>
                       </div>
                     </div>
+                    
                     <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <div className="text-sm text-gray-400">{phaseCompletion}/{phaseTotal}</div>
-                        <div className="text-xs text-gray-500">{phaseProgress.toFixed(0)}%</div>
+                      {isCloudConfigured && (
+                        <button
+                          onClick={() => setUseCloud(!useCloud)}
+                          className={`px-3 py-1 rounded-lg text-sm ${useCloud ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'}`}
+                        >
+                          ☁️ {useCloud ? 'ON' : 'OFF'}
+                        </button>
+                      )}
+                      <div className="text-center">
+                        <div className="text-xs text-gray-400">Nível</div>
+                        <div className="text-2xl">{levels[currentLevelIndex].icon}</div>
                       </div>
-                      {expandedPhase === phaseIndex ? <ChevronUp /> : <ChevronDown />}
+                      <div className="text-center">
+                        <div className="text-xs text-gray-400">XP</div>
+                        <div className="text-lg font-bold text-yellow-400">{userProgress.totalXP}</div>
+                      </div>
+                      <button
+                        onClick={() => setShowAchievements(!showAchievements)}
+                        className="relative p-2 hover:bg-white/10 rounded-lg"
+                      >
+                        <div className="text-2xl">🏅</div>
+                        {userProgress.achievements.length > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {userProgress.achievements.length}
+                          </span>
+                        )}
+                      </button>
                     </div>
                   </div>
                   
-                  <div className="mt-4 w-full bg-gray-700 rounded-full h-2">
-                    <div 
-                      className={`${phase.color} h-2 rounded-full transition-all duration-500`}
-                      style={{ width: `${phaseProgress}%` }}
-                    />
+                  <div className="mt-4">
+                    <div className="flex justify-between text-xs text-gray-400 mb-1">
+                      <span>{completedCount}/{totalItems} itens</span>
+                      <span>{overallProgress.toFixed(0)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${overallProgress}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
-                
-                {expandedPhase === phaseIndex && (
-                  <div className="p-6 pt-0 space-y-3">
-                    {phase.items.map(item => {
-                      const state = itemStates.find(s => s.id === item.id);
-                      return (
-                        <div key={item.id} className="bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-all">
-                          <div className="flex items-start space-x-3">
-                            <button
-                              onClick={() => toggleItem(item.id)}
-                              className="mt-1"
-                            >
-                              {state?.completed ? (
-                                <CheckCircle2 className="w-5 h-5 text-green-400" />
-                              ) : (
-                                <Circle className="w-5 h-5 text-gray-500" />
-                              )}
-                            </button>
-                            <div className="flex-1">
-                              <div className="flex items-center flex-wrap gap-2">
-                                <h5 className={`font-medium ${state?.completed ? 'line-through text-gray-500' : ''}`}>
-                                  {item.title}
-                                </h5>
-                                <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded flex items-center">
-                                  <Zap className="w-3 h-3 mr-1" />
-                                  +{item.xp} XP
-                                </span>
-                                <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">
-                                  {item.type}
-                                </span>
-                              </div>
-                              {item.link && (
-                                <a 
-                                  href={item.link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs text-blue-400 hover:text-blue-300 mt-1 inline-block"
-                                >
-                                  🔗 Acessar
-                                </a>
-                              )}
+              </div>
+
+              {/* Achievements Modal */}
+              {showAchievements && (
+                <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={() => setShowAchievements(false)}>
+                  <div className="bg-gradient-to-br from-slate-800 to-purple-900 rounded-2xl max-w-2xl w-full p-6" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-2xl font-bold">🏆 Conquistas</h2>
+                      <button onClick={() => setShowAchievements(false)} className="text-2xl">×</button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {achievements.map(ach => {
+                        const unlocked = userProgress.achievements.includes(ach.id);
+                        return (
+                          <div 
+                            key={ach.id} 
+                            className={`rounded-lg p-4 ${unlocked ? 'bg-green-500/20 border-2 border-green-500' : 'bg-gray-800/30 opacity-50'}`}
+                          >
+                            <div className="text-3xl mb-2">{ach.icon}</div>
+                            <h4 className="font-bold">{ach.name}</h4>
+                            <p className="text-sm text-gray-300">{ach.description}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Roadmap */}
+              <div className="max-w-7xl mx-auto px-4 py-6">
+                <div className="space-y-6">
+                  {roadmapData.map((phase, phaseIndex) => {
+                    const phaseCompletion = phase.items.filter(item => 
+                      itemStates.find(s => s.id === item.id)?.completed
+                    ).length;
+                    const phaseTotal = phase.items.length;
+                    const phaseProgress = (phaseCompletion / phaseTotal) * 100;
+                    
+                    return (
+                      <div key={phaseIndex} className="bg-white/5 backdrop-blur-lg rounded-xl border border-white/10">
+                        <div 
+                          className="p-6 cursor-pointer hover:bg-white/5"
+                          onClick={() => setExpandedPhase(expandedPhase === phaseIndex ? -1 : phaseIndex)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h3 className="text-xl font-bold">{phase.phase}</h3>
+                              <p className="text-sm text-gray-400">{phase.duration}</p>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm">{phaseCompletion}/{phaseTotal}</div>
+                              <div className="text-xs text-gray-500">{phaseProgress.toFixed(0)}%</div>
                             </div>
                           </div>
+                          
+                          <div className="mt-4 w-full bg-gray-700 rounded-full h-2">
+                            <div 
+                              className={`${phase.color} h-2 rounded-full transition-all`}
+                              style={{ width: `${phaseProgress}%` }}
+                            />
+                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                        
+                        {expandedPhase === phaseIndex && (
+                          <div className="p-6 pt-0 space-y-3">
+                            {phase.items.map(item => {
+                              const state = itemStates.find(s => s.id === item.id);
+                              return (
+                                <div key={item.id} className="bg-white/5 rounded-lg p-4 hover:bg-white/10">
+                                  <div className="flex items-center space-x-3">
+                                    <button onClick={() => toggleItem(item.id)}>
+                                      {state?.completed ? (
+                                        <span className="text-2xl">✅</span>
+                                      ) : (
+                                        <span className="text-2xl">⭕</span>
+                                      )}
+                                    </button>
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className={state?.completed ? 'line-through text-gray-500' : ''}>
+                                          {item.title}
+                                        </span>
+                                        <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded">
+                                          ⚡ +{item.xp} XP
+                                        </span>
+                                        <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">
+                                          {item.type}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-};
-export default AIPMRoadmap;
+            </div>
+          );
+        }
+    </script>
+    
+    <script type="text/babel">
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<AIPMRoadmap />);
     </script>
 </body>
 </html>
